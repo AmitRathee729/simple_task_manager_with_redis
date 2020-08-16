@@ -4,7 +4,7 @@ In this user can add and remove tasks. These tasks are stored in Redis. User can
 # to run this APP
 npm i
 
-nodemon app.js  of  npm run test
+npm run test
 
 # Help to make Project
 node-redis
