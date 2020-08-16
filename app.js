@@ -44,6 +44,26 @@ app.get('/', function(req, res){
     })
 });
 
+// POST task
+app.post('/task/add', function(req, res){
+    const task = req.body.task;
+
+    // Add task in redis
+    /**
+     * rpush  --> add values in KEY at right side
+     * tasks      is KEY name
+     * task       which we type(add) in body
+     */
+    client.rpush('tasks', task, function(err, reply){
+        if (err){
+            console.log(err);
+        }
+        console.log('Task Added...');
+        // after adding redirect to '/' page
+        res.redirect('/');
+    })
+})
+
 app.listen(3000);
 console.log('Server started on port 3000');
 
