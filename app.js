@@ -3,6 +3,7 @@ const path = require("path");
 const logger = require("morgan");
 const bodyParser = require("body-parser");
 const redis = require("redis");
+const { networkInterfaces } = require("os");
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // setup routes
 app.get('/', function(req, res){
     const title = 'Task List'
+    const call = 'Next Call';
 
     /**
      * fetch all tasks in redis
@@ -35,12 +37,20 @@ app.get('/', function(req, res){
      * 0 -1 means all values
      */ 
     client.lrange('tasks', 0, -1, function(err, reply){
+        // to Show next call data
+        client.hgetall('call', function(err, call){
+            if (err){
+                console.log(err);
+            }
+            console.log('Get next call data sucessfully...');
 
-    // render data from index file which is in views folder
-    res.render('index', {
-        title: title,
-        tasks: reply
-    });
+        // render data from index file which is in views folder
+        res.render('index', {
+            title: title,
+            tasks: reply,
+            call: call
+            })
+        });
     })
 });
 
@@ -87,6 +97,29 @@ app.post('/task/delete', function(req, res){
         }
         res.redirect('/');
     })
+})
+
+// Add Next call Name
+app.post('/call/add', function(req, res){
+    const nextCall = {};
+
+    nextCall.name = req.body.name;
+    nextCall.phone = req.body.phone;
+    nextCall.company = req.body.company;
+    nextCall.time = req.body.time;
+
+    /**
+     * HMSET   to set multiple value and data will store like JSON format
+     * call is KEY
+     * name is key of JSON data and nextCall.name is name of user
+     */
+    client.hmset('call', ['name', nextCall.name, 'company', nextCall.company, 'phone', nextCall.phone, 'time', nextCall.time], function(err, reply){
+        if (err){
+            console.log(err);
+        }
+        console.log('Next call added sucessfully...');
+        res.redirect('/');
+    });
 })
 
 app.listen(3000);
