@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // setup routes
 app.get('/', function(req, res){
-    const title = 'Task List';
+    const title = 'Task List'
 
     /**
      * fetch all tasks in redis
@@ -60,6 +60,31 @@ app.post('/task/add', function(req, res){
         }
         console.log('Task Added...');
         // after adding redirect to '/' page
+        res.redirect('/');
+    })
+})
+
+// Delete task
+app.post('/task/delete', function(req, res){
+    let tasksToDel = req.body.tasks;
+    console.log('this is ', tasksToDel)
+    // check selected task in redis or not
+    client.lrange('tasks', 0, -1, function(err, tasks){
+        for (let i = 0; i < tasks.length; i++) {
+            // if selected task is in redis tasks list then
+            if(tasksToDel.indexOf(tasks[i]) > -1){
+                // lrem --> remove value from KEY
+                // tasks   is KEY
+                // 0    starting from index 0
+                // task[i]  ending to this index
+                client.lrem('tasks', 0, tasks[i], function(){
+                    if (err){
+                        console.log(err);
+                    }
+                    console.log('Tasks removed Successfully..');
+                });  
+            }            
+        }
         res.redirect('/');
     })
 })
